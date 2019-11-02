@@ -1,0 +1,146 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = ".;proto";
+
+import "google/protobuf/empty.proto";
+
+service WireguardService {
+    rpc CreateNetwork(CreateNetworkRequest) returns (CreateNetworkResponse) {}
+    rpc ListNetworks(google.protobuf.Empty) returns (ListNetworksResponse) {}
+    rpc GetNetwork(GetNetworkRequest) returns (GetNetworkResponse) {}
+    rpc DeleteNetwork(DeleteNetworkRequest) returns (DeleteNetworkResponse) {}
+
+    rpc AcquireLease(AcquireLeaseRequest) returns (AcquireLeaseResponse) {}
+    rpc ListLeases(google.protobuf.Empty) returns (ListLeasesResponse) {}
+    rpc GetLease(GetLeaseRequest) returns (GetLeaseResponse) {}
+    rpc DeleteLease(DeleteLeaseRequest) returns (DeleteLeaseResponse) {}
+    rpc RenewLease(RenewLeaseRequest) returns (RenewLeaseResponse) {}
+    rpc PurgeLeases(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+
+    rpc FetchConfiguration(ConfigurationRequest) returns (ConfigurationResponse) {}
+}
+
+message ListNetworksResponse {
+    repeated Network networks = 1;
+}
+
+message GetNetworkRequest {
+    string name = 1;
+}
+
+message GetNetworkResponse {
+    Network network = 1;
+}
+
+message DeleteNetworkRequest {
+    string name = 1;
+}
+
+message DeleteNetworkResponse {
+    string name = 1;
+}
+
+message DeleteLeaseRequest {
+    string uuid = 1;
+}
+
+message DeleteLeaseResponse {
+    string uuid = 1;
+}
+
+message Network {
+    string name = 1;
+    string address = 2;
+    repeated string subnets = 3;
+    int32 num_subnets = 4;
+}
+
+message CreateNetworkRequest {
+    string name = 1;
+    string address = 2;
+    int32 subnets = 3;
+}
+
+message CreateNetworkResponse {
+    Network network = 1;
+}
+
+message PublicPeer {
+    // Public IP address that peer is reachable through
+    string address = 1;
+    // Public port that peer is reachable at
+    int32 port = 2;
+}
+
+message Endpoint {
+    // Public address this peer is reachable at, can be null
+    PublicPeer peer = 1;
+    // Public key of the peer
+    string public_key = 2;
+    // Networks that are reachable through that peer.
+    repeated string networks = 3;
+}
+
+message NetworkDefinition {
+    // Name of the network, this maps to a network identifier
+    string name = 1;
+    // Network range
+    string address = 2;
+    // List of endpoints of the network
+    repeated Endpoint endpoints = 3;
+}
+
+message AcquireLeaseRequest {
+    // Node name, should be unique accross the network
+    string node_name = 1;
+    // Network onto which register
+    string network_name = 2;
+    // Public key of the endpoint
+    string public_key = 3;
+    // If this is null then the peer is considered to be behind a NAT
+    PublicPeer peer = 4;
+}
+
+message RenewLeaseRequest {
+    string uuid = 1;
+}
+
+message RenewLeaseResponse {
+    Lease lease = 1;
+}
+
+message Lease {
+    string ip_range = 1;
+    string network = 2;
+    int64 expires = 3;
+    string uuid = 4;
+    string public_key = 5;
+    bool expired = 6;
+}
+
+message AcquireLeaseResponse {
+    Lease lease = 1;
+}
+
+message GetLeaseRequest {
+    string uuid = 1;
+}
+
+message GetLeaseResponse {
+    Lease lease = 1;
+}
+
+message ListLeasesResponse {
+    repeated Lease leases = 1;
+}
+
+message ConfigurationRequest {
+    // Name of the network we want to get the configuration for
+    string network_name = 1;
+}
+
+message ConfigurationResponse {
+    NetworkDefinition network = 1;
+}

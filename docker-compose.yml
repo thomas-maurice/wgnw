@@ -1,0 +1,12 @@
+version: '3'
+services:
+  cockroach:
+    image: "cockroachdb/cockroach:v19.1.5"
+    ports:
+      - "8080:8080"
+      - "26257:26257"
+    command: start --insecure
+  redis:
+    image: "redis"
+    ports:
+      - "6379:6379"
