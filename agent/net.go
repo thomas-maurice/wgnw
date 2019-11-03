@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net"
 	"os"
 	"syscall"
@@ -17,29 +18,31 @@ import (
 // ensureInterface makes sure the interface exists and is of the correct type.
 // if not the interface will be destroyed and re-created
 func ensureInterface(name string) error {
-	link, err := netlink.LinkByName(name)
-	if err != nil && !os.IsNotExist(err) {
-		logrus.Errorf("Could not check existance of interface %s", name)
-		return err
-	}
+	link, _ := netlink.LinkByName(name)
 
 	if link != nil {
 		if link.Type() != "wireguard" {
 			logrus.Infof("Link %s is not of type 'wireguard', recreating", name)
-			err = netlink.LinkDel(link)
+			err := netlink.LinkDel(link)
 			if err != nil {
 				logrus.WithError(err).Errorf("Could not remove interface %s", name)
 				return err
 			}
 		}
+	} else {
+		logrus.Warningf("No such device %s", name)
 	}
 
-	err = netlink.LinkAdd(&wireguard{LinkAttrs: netlink.LinkAttrs{Name: ifaceName}})
+	err := netlink.LinkAdd(&wireguard{LinkAttrs: netlink.LinkAttrs{Name: ifaceName}})
 	if err != nil && !os.IsExist(err) {
 		logrus.WithError(err).Errorf("Could not create interface %s", name)
 		return err
 	}
 
+	link, _ = netlink.LinkByName(name)
+	if link == nil {
+		return fmt.Errorf("Could not get a handle on %s", name)
+	}
 	if err := netlink.LinkSetMTU(link, 1420); err != nil {
 		logrus.WithError(err).Errorf("Could not set MTU for %s", name)
 		return err
