@@ -9,3 +9,5 @@ before_install:
 script:
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker push mauricethomas/wgnw:${TRAVIS_COMMIT}
+  - docker tag mauricethomas/wgnw:${TRAVIS_COMMIT} mauricethomas/wgnw:latest
+  - docker push mauricethomas/wgnw:latest
