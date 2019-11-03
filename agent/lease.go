@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"os"
 
 	"github.com/sirupsen/logrus"
@@ -19,7 +18,7 @@ func newLease(client proto.WireguardServiceClient,
 		return nil, err
 	}
 
-	leaseRequest, err := client.AcquireLease(context.Background(), &proto.AcquireLeaseRequest{
+	leaseRequest, err := client.AcquireLease(getContext(), &proto.AcquireLeaseRequest{
 		PublicKey:   pubkey,
 		NetworkName: network,
 		NodeName:    hostname,
@@ -49,7 +48,7 @@ func getOrRenewLease(client proto.WireguardServiceClient,
 		return lease, nil
 	}
 
-	renewedLease, err := client.RenewLease(context.Background(), &proto.RenewLeaseRequest{
+	renewedLease, err := client.RenewLease(getContext(), &proto.RenewLeaseRequest{
 		Uuid: state.LeaseUUID,
 	})
 

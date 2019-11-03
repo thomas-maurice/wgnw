@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"os"
 
 	"github.com/golang/protobuf/ptypes/empty"
@@ -59,7 +58,7 @@ var leaseCreateCmd = &cobra.Command{
 			logrus.WithError(err).Fatal("Could not get hostname")
 		}
 
-		data, err := c.AcquireLease(context.Background(), &proto.AcquireLeaseRequest{
+		data, err := c.AcquireLease(getContext(), &proto.AcquireLeaseRequest{
 			NetworkName: args[0],
 			NodeName:    hostname,
 			PublicKey:   publicKey,
@@ -81,7 +80,7 @@ var leaseListCmd = &cobra.Command{
 		if err != nil {
 			logrus.WithError(err).Fatal("Could not get a client")
 		}
-		data, err := c.ListLeases(context.Background(), &empty.Empty{})
+		data, err := c.ListLeases(getContext(), &empty.Empty{})
 		if err != nil {
 			logrus.WithError(err).Fatal("Error")
 		}
@@ -101,7 +100,7 @@ var leaseGetCmd = &cobra.Command{
 		if err != nil {
 			logrus.WithError(err).Fatal("Could not get a client")
 		}
-		data, err := c.GetLease(context.Background(), &proto.GetLeaseRequest{Uuid: args[0]})
+		data, err := c.GetLease(getContext(), &proto.GetLeaseRequest{Uuid: args[0]})
 		if err != nil {
 			logrus.WithError(err).Fatal("Error")
 		}
@@ -121,7 +120,7 @@ var leaseDeleteCmd = &cobra.Command{
 		if err != nil {
 			logrus.WithError(err).Fatal("Could not get a client")
 		}
-		data, err := c.DeleteLease(context.Background(), &proto.DeleteLeaseRequest{Uuid: args[0]})
+		data, err := c.DeleteLease(getContext(), &proto.DeleteLeaseRequest{Uuid: args[0]})
 		if err != nil {
 			logrus.WithError(err).Fatal("Error")
 		}
@@ -138,7 +137,7 @@ var leasePurgeCmd = &cobra.Command{
 		if err != nil {
 			logrus.WithError(err).Fatal("Could not get a client")
 		}
-		data, err := c.PurgeLeases(context.Background(), &empty.Empty{})
+		data, err := c.PurgeLeases(getContext(), &empty.Empty{})
 		if err != nil {
 			logrus.WithError(err).Fatal("Error")
 		}

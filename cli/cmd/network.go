@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"context"
-
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -34,7 +32,7 @@ var networkCreateCmd = &cobra.Command{
 			logrus.WithError(err).Fatal("Could not get a client")
 		}
 
-		data, err := c.CreateNetwork(context.Background(), &proto.CreateNetworkRequest{
+		data, err := c.CreateNetwork(getContext(), &proto.CreateNetworkRequest{
 			Name:    args[0],
 			Address: args[1],
 			Subnets: subnets,
@@ -56,7 +54,7 @@ var networkListCmd = &cobra.Command{
 			logrus.WithError(err).Fatal("Could not get a client")
 		}
 
-		data, err := c.ListNetworks(context.Background(), &empty.Empty{})
+		data, err := c.ListNetworks(getContext(), &empty.Empty{})
 		if err != nil {
 			logrus.WithError(err).Fatal("Error")
 		}
@@ -78,7 +76,7 @@ var networkGetCmd = &cobra.Command{
 			logrus.WithError(err).Fatal("Could not get a client")
 		}
 
-		data, err := c.GetNetwork(context.Background(), &proto.GetNetworkRequest{Name: args[0]})
+		data, err := c.GetNetwork(getContext(), &proto.GetNetworkRequest{Name: args[0]})
 		if err != nil {
 			logrus.WithError(err).Fatal("Error")
 		}
@@ -100,7 +98,7 @@ var networkDeleteCmd = &cobra.Command{
 			logrus.WithError(err).Fatal("Could not get a client")
 		}
 
-		data, err := c.DeleteNetwork(context.Background(), &proto.DeleteNetworkRequest{Name: args[0]})
+		data, err := c.DeleteNetwork(getContext(), &proto.DeleteNetworkRequest{Name: args[0]})
 		if err != nil {
 			logrus.WithError(err).Fatal("Error")
 		}

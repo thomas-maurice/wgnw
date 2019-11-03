@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
@@ -16,6 +17,7 @@ import (
 	"google.golang.org/grpc"
 
 	proto "github.com/thomas-maurice/wgnw/proto"
+	"github.com/thomas-maurice/wgnw/server/auth"
 	"github.com/thomas-maurice/wgnw/server/sql"
 )
 
@@ -24,6 +26,7 @@ var (
 	sqlConnString     string
 	listenAddress     string
 	promListenAddress string
+	hashedAccessToken string
 	debug             bool
 )
 
@@ -33,10 +36,15 @@ func init() {
 	flag.StringVar(&listenAddress, "listen", "0.0.0.0:10000", "Address to listen on")
 	flag.StringVar(&promListenAddress, "listen-prometheus", "0.0.0.0:10001", "Address to listen on for prometheus")
 	flag.StringVar(&sqlConnString, "sql-string", "db.sqlite3", "SQL driver connstring")
+	flag.StringVar(&hashedAccessToken, "hashed-token", "", "Auth token used to identify")
 }
 
 func main() {
 	flag.Parse()
+
+	if hashedAccessToken == "" {
+		logrus.Warning("Running without an auth token, anyone can access the API")
+	}
 
 	entry := logrus.NewEntry(logrus.New())
 	grpc_logrus.ReplaceGrpcLogger(entry)
@@ -46,7 +54,7 @@ func main() {
 			grpc_logrus.StreamServerInterceptor(entry,
 				grpc_logrus.WithLevels(grpc_logrus.DefaultCodeToLevel),
 			),
-			//grpc_auth.StreamServerInterceptor(auth.NewAuthFunction(db, adminHashedToken)),
+			grpc_auth.StreamServerInterceptor(auth.NewAuthFunction(hashedAccessToken)),
 			grpc_prometheus.StreamServerInterceptor,
 			grpc_recovery.StreamServerInterceptor(),
 		)),
@@ -55,7 +63,7 @@ func main() {
 			grpc_logrus.UnaryServerInterceptor(entry,
 				grpc_logrus.WithLevels(grpc_logrus.DefaultCodeToLevel),
 			),
-			//grpc_auth.UnaryServerInterceptor(auth.NewAuthFunction(db, adminHashedToken)),
+			grpc_auth.UnaryServerInterceptor(auth.NewAuthFunction(hashedAccessToken)),
 			grpc_prometheus.UnaryServerInterceptor,
 			grpc_recovery.UnaryServerInterceptor(),
 		)),

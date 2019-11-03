@@ -10,6 +10,7 @@ import (
 var (
 	marshaller        string
 	controllerAddress string
+	authToken         string
 )
 
 var rootCmd = &cobra.Command{
@@ -33,4 +34,5 @@ func init() {
 	rootCmd.AddCommand(leaseCmd)
 	rootCmd.PersistentFlags().StringVarP(&marshaller, "output", "o", "json", "Output marshaller, json or yaml")
 	rootCmd.PersistentFlags().StringVarP(&controllerAddress, "controller", "c", "localhost:10000", "Controller address")
+	rootCmd.PersistentFlags().StringVarP(&authToken, "token", "t", "", "Auth token to talk to the API")
 }

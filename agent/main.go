@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"time"
 
@@ -18,6 +17,7 @@ var (
 	svcAddr     string
 	stateFile   string
 	keyFile     string
+	authToken   string
 )
 
 func init() {
@@ -28,6 +28,7 @@ func init() {
 	flag.StringVar(&svcAddr, "controller", "localhost:10000", "Address of the controller")
 	flag.StringVar(&stateFile, "state", "/tmp/wgagent.state", "Statefile location")
 	flag.StringVar(&keyFile, "key-file", "/tmp/wgagent.key", "Private key file location")
+	flag.StringVar(&authToken, "auth-token", "", "Auth token to talk to the API")
 }
 
 func main() {
@@ -82,7 +83,7 @@ func main() {
 			logrus.WithError(err).Fatalf("Could not ensure the interface %s", ifaceName)
 		}
 
-		config, err := c.FetchConfiguration(context.Background(), &proto.ConfigurationRequest{NetworkName: lease.Network})
+		config, err := c.FetchConfiguration(getContext(), &proto.ConfigurationRequest{NetworkName: lease.Network})
 		if err != nil {
 			logrus.WithError(err).Error("Could not fetch configuration, will retry in 10s")
 			time.Sleep(10 * time.Second)
