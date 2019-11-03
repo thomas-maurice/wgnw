@@ -8,13 +8,15 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"github.com/sirupsen/logrus"
 
 	proto "github.com/thomas-maurice/wgnw/proto"
 	"github.com/thomas-maurice/wgnw/server/interfaces"
 )
 
 type SQLWireguardService struct {
-	db *gorm.DB
+	db            *gorm.DB
+	leaseDuration time.Duration
 }
 
 func getDatabase(driver string, connString string, verbose bool) (*gorm.DB, error) {
@@ -42,14 +44,17 @@ func getDatabase(driver string, connString string, verbose bool) (*gorm.DB, erro
 	return db, err
 }
 
-func NewSQLWireguardService(driver string, connString string, verbose bool) (interfaces.WireguardService, error) {
+func NewSQLWireguardService(driver string, connString string, verbose bool, leaseDuration time.Duration) (interfaces.WireguardService, error) {
 	db, err := getDatabase(driver, connString, verbose)
 	if err != nil {
 		return nil, err
 	}
 
+	logrus.Infof("Lease duration: %s", leaseDuration)
+
 	return &SQLWireguardService{
-		db: db,
+		db:            db,
+		leaseDuration: leaseDuration,
 	}, nil
 }
 
@@ -139,7 +144,7 @@ func (s *SQLWireguardService) AcquireLease(leaseRequest *proto.AcquireLeaseReque
 		return nil, err
 	}
 
-	expires := time.Now().Unix() + 600
+	expires := time.Now().Unix() + int64(s.leaseDuration.Seconds())
 
 	tx := s.db.Begin()
 	var subnet SubNetwork
@@ -262,7 +267,7 @@ func (s *SQLWireguardService) RenewLease(id string) (*proto.Lease, error) {
 		return nil, err
 	}
 
-	expires := time.Now().Unix() + 600
+	expires := time.Now().Unix() + int64(s.leaseDuration.Seconds())
 
 	err = s.db.Model(&subnet).Updates(&SubNetwork{Free: expires}).Error
 	if err != nil {

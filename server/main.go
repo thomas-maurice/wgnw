@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"time"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
@@ -28,6 +29,7 @@ var (
 	promListenAddress string
 	hashedAccessToken string
 	debug             bool
+	leaseDuration     int64
 )
 
 func init() {
@@ -37,6 +39,7 @@ func init() {
 	flag.StringVar(&promListenAddress, "listen-prometheus", "0.0.0.0:10001", "Address to listen on for prometheus")
 	flag.StringVar(&sqlConnString, "sql-string", "db.sqlite3", "SQL driver connstring")
 	flag.StringVar(&hashedAccessToken, "hashed-token", "", "Auth token used to identify")
+	flag.Int64Var(&leaseDuration, "lease-duration", 3600, "Lease duration")
 }
 
 func main() {
@@ -71,7 +74,7 @@ func main() {
 
 	grpc_prometheus.EnableHandlingTimeHistogram()
 
-	wgService, err := sql.NewSQLWireguardService(sqlDriver, sqlConnString, debug)
+	wgService, err := sql.NewSQLWireguardService(sqlDriver, sqlConnString, debug, time.Duration(leaseDuration)*time.Second)
 	if err != nil {
 		logrus.WithError(err).Fatal("Could not create wireguard service")
 	}
