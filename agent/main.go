@@ -38,6 +38,11 @@ func main() {
 		logrus.Fatal("'-net' flag is mandatory")
 	}
 
+	logrus.Infof("Network name: %s", networkName)
+	logrus.Infof("Interface name: %s", ifaceName)
+	logrus.Infof("State file: %s", stateFile)
+	logrus.Infof("Key file: %s", keyFile)
+
 	state, err := loadState(stateFile)
 	if err != nil {
 		logrus.WithError(err).Warningf("Could not load the statefile %s", stateFile)
