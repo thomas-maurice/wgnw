@@ -1,4 +1,4 @@
-# wgnw
+# wgnw [![Build Status](https://travis-ci.org/thomas-maurice/wgnw.svg?branch=master)](https://travis-ci.org/thomas-maurice/wgnw)
 
 wgnw is a toy project I implemented resulting from a discussion with a bunch of friends. The point is to make easy and somewhat
 automatic the configuration of a meshed WireGuard network. The project works as follows:
