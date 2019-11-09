@@ -10,14 +10,19 @@ import (
 )
 
 var (
-	ifaceName   string
-	networkName string
-	publicIP    string
-	port        int
-	svcAddr     string
-	stateFile   string
-	keyFile     string
-	authToken   string
+	ifaceName          string
+	networkName        string
+	publicIP           string
+	port               int
+	svcAddr            string
+	stateFile          string
+	keyFile            string
+	authToken          string
+	useTLS             bool
+	insecureSkipVerify bool
+	caCert             string
+	certFile           string
+	certKeyFile        string
 )
 
 func init() {
@@ -29,6 +34,11 @@ func init() {
 	flag.StringVar(&stateFile, "state", "/tmp/wgagent.state", "Statefile location")
 	flag.StringVar(&keyFile, "key-file", "/tmp/wgagent.key", "Private key file location")
 	flag.StringVar(&authToken, "auth-token", "", "Auth token to talk to the API")
+	flag.BoolVar(&useTLS, "tls", false, "Use TLS or not")
+	flag.BoolVar(&insecureSkipVerify, "insecure-skip-verify", false, "Skip CA verification")
+	flag.StringVar(&caCert, "ca", "", "CA cert file")
+	flag.StringVar(&certFile, "cert", "", "Cert file to use")
+	flag.StringVar(&certKeyFile, "key", "", "Key file to use")
 }
 
 func main() {
@@ -56,7 +66,7 @@ func main() {
 
 	logrus.Infof("Using public key: %s", key.PublicKey().String())
 
-	c, err := getClient(svcAddr)
+	c, err := getClient()
 	if err != nil {
 		logrus.WithError(err).Fatal("Could not get a client")
 	}

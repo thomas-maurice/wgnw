@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"flag"
 	"log"
 	"net"
@@ -17,19 +18,25 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
+	"github.com/thomas-maurice/wgnw/common"
 	proto "github.com/thomas-maurice/wgnw/proto"
 	"github.com/thomas-maurice/wgnw/server/auth"
 	"github.com/thomas-maurice/wgnw/server/sql"
 )
 
 var (
-	sqlDriver         string
-	sqlConnString     string
-	listenAddress     string
-	promListenAddress string
-	hashedAccessToken string
-	debug             bool
-	leaseDuration     int64
+	sqlDriver          string
+	sqlConnString      string
+	listenAddress      string
+	promListenAddress  string
+	hashedAccessToken  string
+	debug              bool
+	leaseDuration      int64
+	useTLS             bool
+	insecureSkipVerify bool
+	caCert             string
+	certFile           string
+	keyFile            string
 )
 
 func init() {
@@ -40,6 +47,11 @@ func init() {
 	flag.StringVar(&sqlConnString, "sql-string", "db.sqlite3", "SQL driver connstring")
 	flag.StringVar(&hashedAccessToken, "hashed-token", "", "Auth token used to identify")
 	flag.Int64Var(&leaseDuration, "lease-duration", 3600, "Lease duration")
+	flag.BoolVar(&useTLS, "tls", false, "Use TLS or not")
+	flag.BoolVar(&insecureSkipVerify, "insecure-skip-verify", false, "Skip CA verification")
+	flag.StringVar(&caCert, "ca", "", "CA cert file")
+	flag.StringVar(&certFile, "cert", "", "Cert file to use")
+	flag.StringVar(&keyFile, "key", "", "Key file to use")
 }
 
 func main() {
@@ -86,9 +98,26 @@ func main() {
 	proto.RegisterWireguardServiceServer(s, wgServer)
 	grpc_prometheus.Register(s)
 
-	lis, err := net.Listen("tcp", listenAddress)
-	if err != nil {
-		logrus.WithError(err).Fatal("Could not create listener")
+	var lis net.Listener
+	if !useTLS {
+		logrus.Debug("Setting up **INSECURE** listener. Make sure this is a dev environment!")
+		lis, err = net.Listen("tcp", listenAddress)
+		if err != nil {
+			logrus.WithError(err).Fatal("Could not listen")
+		}
+		logrus.WithField("listen", listenAddress).Debug(
+			"Started up up **INSECURE** listener. Make sure this is a dev environment!",
+		)
+	} else {
+		tlsConfig, err := common.GetTLSConfig(caCert, certFile, keyFile, insecureSkipVerify)
+
+		if err != nil {
+			logrus.WithError(err).Fatal("Could not setup TLS listener")
+		}
+		lis, err = tls.Listen("tcp", listenAddress, tlsConfig)
+		if err != nil {
+			logrus.WithError(err).Fatal("Could not bind TLS listener")
+		}
 	}
 
 	http.Handle("/metrics", promhttp.Handler())

@@ -3,19 +3,24 @@ package main
 import (
 	"context"
 
-	"google.golang.org/grpc"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/metadata"
 
+	"github.com/thomas-maurice/wgnw/common"
 	"github.com/thomas-maurice/wgnw/proto"
 )
 
-func getClient(addr string) (proto.WireguardServiceClient, error) {
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
-	if err != nil {
-		return nil, err
+func getClient() (proto.WireguardServiceClient, error) {
+	if useTLS {
+		tlsConfig, err := common.GetTLSConfig(caCert, certFile, certKeyFile, insecureSkipVerify)
+
+		if err != nil {
+			logrus.WithError(err).Fatal("Could not setup TLS listener")
+		}
+		return common.GetClient(svcAddr, !useTLS, tlsConfig)
+	} else {
+		return common.GetClient(svcAddr, useTLS, nil)
 	}
-	client := proto.NewWireguardServiceClient(conn)
-	return client, nil
 }
 
 func getContext() context.Context {

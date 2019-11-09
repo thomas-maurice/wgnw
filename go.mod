@@ -21,4 +21,5 @@ require (
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20191028205011-23406de29c08
 	google.golang.org/grpc v1.24.0
 	gopkg.in/yaml.v2 v2.2.4
+	grpc.go4.org v0.0.0-20170609214715-11d0a25b4919
 )

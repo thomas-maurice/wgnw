@@ -8,9 +8,14 @@ import (
 )
 
 var (
-	marshaller        string
-	controllerAddress string
-	authToken         string
+	marshaller         string
+	controllerAddress  string
+	authToken          string
+	useTLS             bool
+	certFile           string
+	caCert             string
+	keyFile            string
+	insecureSkipVerify bool
 )
 
 var rootCmd = &cobra.Command{
@@ -35,4 +40,9 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&marshaller, "output", "o", "json", "Output marshaller, json or yaml")
 	rootCmd.PersistentFlags().StringVarP(&controllerAddress, "controller", "c", "localhost:10000", "Controller address")
 	rootCmd.PersistentFlags().StringVarP(&authToken, "token", "t", "", "Auth token to talk to the API")
+	rootCmd.PersistentFlags().StringVar(&caCert, "ca", "", "File containing the CA certificate")
+	rootCmd.PersistentFlags().StringVar(&certFile, "cert", "", "File containing the client certificate")
+	rootCmd.PersistentFlags().StringVar(&keyFile, "key", "", "File containing the client key")
+	rootCmd.PersistentFlags().BoolVar(&useTLS, "tls", false, "Wether or not use TLS authentication")
+	rootCmd.PersistentFlags().BoolVar(&insecureSkipVerify, "insecure-skip-verify", false, "Wether or not verify the CA certificates")
 }
