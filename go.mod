@@ -4,9 +4,6 @@ go 1.13
 
 require (
 	github.com/apparentlymart/go-cidr v1.0.1
-	github.com/coreos/bbolt v1.3.3 // indirect
-	github.com/coreos/go-systemd v0.0.0-20190719114852-fd7a80b32e1f // indirect
-	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f // indirect
 	github.com/golang/protobuf v1.3.2
 	github.com/google/uuid v1.1.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.1.0
@@ -21,5 +18,4 @@ require (
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20191028205011-23406de29c08
 	google.golang.org/grpc v1.24.0
 	gopkg.in/yaml.v2 v2.2.4
-	grpc.go4.org v0.0.0-20170609214715-11d0a25b4919
 )
