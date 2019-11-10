@@ -9,13 +9,13 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.1.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/jinzhu/gorm v1.9.11
-	github.com/kr/pretty v0.1.0 // indirect
-	github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829
+	github.com/lorenzosaino/go-sysctl v0.1.0
+	github.com/prometheus/client_golang v1.2.1
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.5
 	github.com/vishvananda/netlink v1.0.0
-	github.com/vishvananda/netns v0.0.0-20190625233234-7109fa855b0f // indirect
+	github.com/vishvananda/netns v0.0.0-20191106174202-0a2b9b5464df // indirect
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20191028205011-23406de29c08
-	google.golang.org/grpc v1.24.0
-	gopkg.in/yaml.v2 v2.2.4
+	google.golang.org/grpc v1.25.1
+	gopkg.in/yaml.v2 v2.2.5
 )

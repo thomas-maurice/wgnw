@@ -84,6 +84,11 @@ func main() {
 		}
 	}
 
+	err = ensureSysctl()
+	if err != nil {
+		logrus.WithError(err).Fatal("Could not setup sysctls")
+	}
+
 	for {
 		lease, err = getOrRenewLease(c, networkName, key.PublicKey().String(), publicInfo, &state)
 		if err != nil || lease == nil {
