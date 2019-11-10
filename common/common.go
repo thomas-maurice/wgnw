@@ -7,7 +7,6 @@ import (
 	"errors"
 	"io/ioutil"
 
-	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
@@ -51,7 +50,6 @@ func GetClient(addr string, useTLS bool, config *tls.Config) (proto.WireguardSer
 	var err error
 	if !useTLS {
 		conn, err = grpc.Dial(addr, grpc.WithInsecure())
-		logrus.Warning("Creating an insecure client")
 		if err != nil {
 			return nil, err
 		}
