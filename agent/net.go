@@ -33,7 +33,7 @@ func ensureInterface(name string) error {
 		logrus.Warningf("No such device %s", name)
 	}
 
-	err := netlink.LinkAdd(&wireguard{LinkAttrs: netlink.LinkAttrs{Name: ifaceName}})
+	err := netlink.LinkAdd(&wireguard{LinkAttrs: netlink.LinkAttrs{Name: name}})
 	if err != nil && !os.IsExist(err) {
 		logrus.WithError(err).Errorf("Could not create interface %s", name)
 		return err
@@ -49,6 +49,42 @@ func ensureInterface(name string) error {
 	}
 	if err := netlink.LinkSetUp(link); err != nil {
 		logrus.WithError(err).Errorf("Could bring interface %s up", name)
+		return err
+	}
+
+	return nil
+}
+
+// ensureBridge makes sure the bridge exists and is of the correct type.
+// if not the bridge will be destroyed and re-created
+func ensureBridge(name string) error {
+	link, _ := netlink.LinkByName(name)
+
+	if link != nil {
+		if link.Type() != "bridge" {
+			logrus.Infof("Link %s is not of type 'bridge', recreating", name)
+			err := netlink.LinkDel(link)
+			if err != nil {
+				logrus.WithError(err).Errorf("Could not remove bridge %s", name)
+				return err
+			}
+		}
+	} else {
+		logrus.Warningf("No such device %s", name)
+	}
+
+	err := netlink.LinkAdd(&netlink.Bridge{LinkAttrs: netlink.LinkAttrs{Name: name}})
+	if err != nil && !os.IsExist(err) {
+		logrus.WithError(err).Errorf("Could not create bridge %s", name)
+		return err
+	}
+
+	link, _ = netlink.LinkByName(name)
+	if link == nil {
+		return fmt.Errorf("Could not get a handle on %s", name)
+	}
+	if err := netlink.LinkSetUp(link); err != nil {
+		logrus.WithError(err).Errorf("Could bring bridge %s up", name)
 		return err
 	}
 
@@ -114,7 +150,9 @@ func configureInterface(name string, lease *proto.Lease, config *proto.Configura
 		return err
 	}
 
-	err = ensureIPAddress(name, selfNetwork)
+	selfNetCopy := selfNetwork
+	selfNetCopy.Mask = net.IPv4Mask(255, 255, 255, 255)
+	err = ensureIPAddress(name, selfNetCopy)
 	if err != nil {
 		logrus.WithError(err).Errorf("Could not configure interface %s with its address %s", name, selfNetwork.String())
 	}
@@ -122,6 +160,27 @@ func configureInterface(name string, lease *proto.Lease, config *proto.Configura
 	err = configureInterfaceRoute(name, wgNetwork)
 	if err != nil {
 		logrus.WithError(err).Errorf("Could not configure interface %s with the wireguard route %s", name, wgNetwork.String())
+	}
+
+	return nil
+}
+
+func configureBridge(name string, lease *proto.Lease, config *proto.ConfigurationResponse) error {
+	_, selfNetwork, err := net.ParseCIDR(lease.IpRange)
+	if err != nil {
+		logrus.WithError(err).Errorf("Could not parse lease address %s", lease.IpRange)
+		return err
+	}
+	if ones, _ := selfNetwork.Mask.Size(); ones > 31 {
+		logrus.Warningf("Cannot assign an IP address to the bridge for network %s, network is too small", selfNetwork.String())
+		return nil
+	}
+	selfNetwork.IP[3]++
+
+	err = ensureIPAddress(name, selfNetwork)
+	if err != nil {
+		logrus.WithError(err).Errorf("Could not configure bridge %s with its address %s", name, selfNetwork.String())
+		return err
 	}
 
 	return nil

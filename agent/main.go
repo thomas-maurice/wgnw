@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -11,6 +12,7 @@ import (
 
 var (
 	ifaceName          string
+	createBridge       bool
 	networkName        string
 	publicIP           string
 	port               int
@@ -39,6 +41,7 @@ func init() {
 	flag.StringVar(&caCert, "ca", "", "CA cert file")
 	flag.StringVar(&certFile, "cert", "", "Cert file to use")
 	flag.StringVar(&certKeyFile, "key", "", "Key file to use")
+	flag.BoolVar(&createBridge, "bridge", false, "Create also a bridge")
 }
 
 func main() {
@@ -98,6 +101,13 @@ func main() {
 			logrus.WithError(err).Fatalf("Could not ensure the interface %s", ifaceName)
 		}
 
+		if createBridge {
+			err = ensureBridge(fmt.Sprintf("br-%s", ifaceName))
+			if err != nil {
+				logrus.WithError(err).Fatalf("Could not ensure the bridge %s", fmt.Sprintf("br-%s", ifaceName))
+			}
+		}
+
 		config, err := c.FetchConfiguration(getContext(), &proto.ConfigurationRequest{NetworkName: lease.Network})
 		if err != nil {
 			logrus.WithError(err).Error("Could not fetch configuration, will retry in 10s")
@@ -110,6 +120,13 @@ func main() {
 			logrus.WithError(err).Error("Could not configure interface, will retry in 10s")
 			time.Sleep(10 * time.Second)
 			continue
+		}
+
+		if createBridge {
+			err = configureBridge(fmt.Sprintf("br-%s", ifaceName), lease, config)
+			if err != nil {
+				logrus.WithError(err).Warning("Could not configure bridge, will retry in 10s")
+			}
 		}
 
 		err = configureWireguardInterface(ifaceName, *key, port, config)
