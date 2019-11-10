@@ -15,9 +15,9 @@ func getClient() (proto.WireguardServiceClient, error) {
 		tlsConfig, err := common.GetTLSConfig(caCert, certFile, keyFile, insecureSkipVerify)
 
 		if err != nil {
-			logrus.WithError(err).Fatal("Could not setup TLS listener")
+			logrus.WithError(err).Fatal("Could not setup TLS client")
 		}
-		return common.GetClient(controllerAddress, !useTLS, tlsConfig)
+		return common.GetClient(controllerAddress, useTLS, tlsConfig)
 	} else {
 		return common.GetClient(controllerAddress, useTLS, nil)
 	}
