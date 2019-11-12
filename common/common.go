@@ -29,16 +29,19 @@ func GetTLSConfig(rootCA, clientCert, clientKey string, skipVerify bool) (*tls.C
 			return nil, errors.New("credentials: failed to append certificates to the pool")
 		}
 	}
-	cert, err := tls.LoadX509KeyPair(clientCert, clientKey)
-	if err != nil {
-		return nil, err
-	}
 
 	config := tls.Config{
-		Certificates:       []tls.Certificate{cert},
 		RootCAs:            rootPool,
 		InsecureSkipVerify: skipVerify,
 	}
+
+	cert, err := tls.LoadX509KeyPair(clientCert, clientKey)
+	if err != nil {
+
+	} else {
+		config.Certificates = []tls.Certificate{cert}
+	}
+
 	config.BuildNameToCertificate()
 
 	return &config, nil

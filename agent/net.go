@@ -219,6 +219,7 @@ func configureWireguardInterface(name string, key wgtypes.Key, port int, config 
 				logrus.WithError(err).Warningf("Could not parse peer network %s, skipping", nw)
 			}
 		}
+
 		peers = append(peers, wgtypes.PeerConfig{
 			PublicKey:                   peerKey,
 			PersistentKeepaliveInterval: &keepaliveDuration,
