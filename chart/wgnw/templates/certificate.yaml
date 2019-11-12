@@ -1,0 +1,15 @@
+{{- if .Values.certificate.enabled -}}
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: {{ .Values.host }}
+  labels:
+{{ include "wgnw.labels" . | indent 4 }}
+spec:
+  secretName: {{ .Values.host }}
+  dnsNames:
+  - {{ .Values.host }}
+  issuerRef:
+    name: {{ .Values.certificate.issuerName }}
+    kind: {{ .Values.certificate.issuerKind }}
+{{- end }}
