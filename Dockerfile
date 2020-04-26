@@ -1,4 +1,4 @@
-FROM golang:1.13.3-alpine
+FROM golang:1.14-alpine
 RUN apk update && apk add sqlite-dev alpine-sdk
 
 WORKDIR /go/src/github.com/thomas-maurice/wgnw
